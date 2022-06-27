@@ -33,8 +33,25 @@ def enrollment_numbers(input_json_path, output_file_path):
     :param input_json_path: Path of the students database json file.
     :param output_file_path: Path of the output text file.
     """
+    with open(input_json_path, 'r') as input_file:
+        students_db_dict = json.load(input_file)
     
+    list_of_courses = []
 
+    for info_dict in students_db_dict.values():
+        for course in info_dict['registered_courses']:
+            list_of_courses.append(course)
+    
+    list_of_courses.sort()
+    dict_of_enroll_nums = {}
+    for course in list_of_courses:
+        dict_of_enroll_nums[course] = 0
+    for course in list_of_courses:
+        dict_of_enroll_nums[course] += 1
+    
+    with open(output_file_path, 'w') as output_file:
+        for course, enroll_num in dict_of_enroll_nums.items():
+            output_file.write('"' + course + '" ' + str(enroll_num) + "\n")
 
 
 def courses_for_lecturers(json_directory_path, output_json_path):
@@ -44,7 +61,17 @@ def courses_for_lecturers(json_directory_path, output_json_path):
     :param json_directory_path: Path of the semsters_data files.
     :param output_json_path: Path of the output json file.
     """
-    pass
+    for file in os.listdir(json_directory_path):
+        file_path = os.path.join(json_directory_path, file)
+        if os.path.isfile(file_path):
+            with open(file_path, 'r') as input_file:
+                semester_db_dict = json.load(input_file)
 
+    courses_for_lecturers_dict = {}
 
-
+    for course_info in semester_db_dict.values():
+        for lecturer in course_info["lecturers"]:
+            courses_for_lecturers_dict[lecturer] = [].append(course_info["course_name"])
+    
+    with open(output_json_path, 'w') as output_file:
+        json.dump(courses_for_lecturers_dict, output_file)
