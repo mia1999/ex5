@@ -61,17 +61,24 @@ def courses_for_lecturers(json_directory_path, output_json_path):
     :param json_directory_path: Path of the semsters_data files.
     :param output_json_path: Path of the output json file.
     """
-    for file in os.listdir(json_directory_path):
-        file_path = os.path.join(json_directory_path, file)
-        if os.path.isfile(file_path):
-            with open(file_path, 'r') as input_file:
-                semester_db_dict = json.load(input_file)
-
     courses_for_lecturers_dict = {}
 
-    for course_info in semester_db_dict.values():
-        for lecturer in course_info["lecturers"]:
-            courses_for_lecturers_dict[lecturer] = [].append(course_info["course_name"])
-    
-    with open(output_json_path, 'w') as output_file:
+    for file in os.listdir(json_directory_path):
+        file_path = os.path.join(json_directory_path, file)
+        if (os.path.isfile(file_path) and os.path.splitext(file)[1] == '.json'):
+            with open(file_path, 'r') as input_file:
+                semesters_db_dict = json.load(input_file)
+            # Add all lecturers to the dict.
+            for course_info in semesters_db_dict.values():
+                for lecturer in course_info["lecturers"]:
+                    if lecturer not in courses_for_lecturers_dict:
+                        courses_for_lecturers_dict[lecturer] = []
+            # Adding the relevant courses to each lecturer.
+            for lecturer in courses_for_lecturers_dict.keys():
+                for course_info in semesters_db_dict.values():
+                    if ((lecturer in course_info["lecturers"])
+                    and (course_info["course_name"] not in courses_for_lecturers_dict[lecturer])):
+                        courses_for_lecturers_dict[lecturer].append(course_info["course_name"])
+
+    with open(output_json_path, 'a') as output_file:
         json.dump(courses_for_lecturers_dict, output_file)
